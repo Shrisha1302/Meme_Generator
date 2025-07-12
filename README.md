@@ -42,7 +42,7 @@ Handle file uploads and canvas rendering like a pro.
 Make recruiters laugh with a README that’s 10/10.
 
 Installation (Super Easy)
-git clone https://github.com/your-username/meme-generator.git
+git clone https://github.com/Shrisha1302/meme-generator.git
 
 Open index.html in a browser, and you’re ready to meme!
 Future Plans (Meme World Domination)
