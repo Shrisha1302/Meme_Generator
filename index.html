@@ -26,8 +26,8 @@
     }
     input, button, select {
       margin: 5px;
-      padding: 8px;
-      font-size: 16px;
+      padding: 10px;
+      font-size: 18px;
     }
     button {
       background-color: #4CAF50;
@@ -41,6 +41,14 @@
     #downloadLink {
       margin-top: 10px;
       display: none;
+      padding: 10px;
+      background-color: #4CAF50;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+    #downloadLink:hover {
+      background-color: #45a049;
     }
     #fontSelect option[value="Arial"] {
       font-family: Arial, sans-serif;
@@ -89,74 +97,89 @@
   </div>
 
   <script>
-    let img = null;
-    let canvas;
-    let emojis = [];
+  let img = null;
+  let canvas;
+  let emojis = [];
+  
 
-    function setup() {
-      canvas = createCanvas(400, 400);
-      canvas.parent('canvasContainer');
-      canvas.mouseClicked(placeEmoji); // Add click handler for emoji placement
-      background(255);
-      textAlign(CENTER, CENTER);
-      textSize(24);
-      fill(255);
-      stroke(0);
-      strokeWeight(4);
+  function setup() {
+    canvas = createCanvas(400, 400);
+    canvas.parent('canvasContainer');
+    canvas.mouseClicked(placeEmoji);
+    background(255);
+    textAlign(CENTER, CENTER);
+    textSize(24);
+    fill(255);
+    stroke(0);
+    strokeWeight(4);
+    noLoop(); // Stop continuous drawing
+  }
+
+  function draw() {
+    renderMeme();
+  }
+
+  function renderMeme() {
+    background(255);
+    if (img) {
+      image(img, 0, 0, width, height);
     }
 
-    function draw() {
-      background(255);
-      if (img) {
-        image(img, 0, 0, width, height);
-        let topText = document.getElementById('topText').value.toUpperCase();
-        let bottomText = document.getElementById('bottomText').value.toUpperCase();
-        let selectedFont = document.getElementById('fontSelect').value;
-        
-        // Apply selected font
-        textFont(selectedFont);
-        
-        // Draw top text
-        text(topText, width / 2, 50);
-        // Draw bottom text
-        text(bottomText, width / 2, height - 30);
-        
-        // Draw emojis
-        emojis.forEach(emoji => {
-          textSize(30);
-          text(emoji.text, emoji.x, emoji.y);
-          textSize(24); // Reset text size for main text
-        });
-      } else {
-        text("Upload an image to start!", width / 2, height / 2);
-      }
-    }
+    let topText = document.getElementById('topText').value.toUpperCase();
+    let bottomText = document.getElementById('bottomText').value.toUpperCase();
+    let selectedFont = document.getElementById('fontSelect').value;
 
-    function placeEmoji() {
-      let selectedEmoji = document.getElementById('emojiSelect').value;
-      let x = mouseX;
-      let y = mouseY;
-      // Only add emoji if within canvas bounds
-      if (x >= 0 && x <= width && y >= 0 && y <= height) {
-        emojis.push({ text: selectedEmoji, x: x, y: y });
-      }
-    }
+    textFont(selectedFont);
+    textSize(24);
+    text(topText, width / 2, 50);
+    text(bottomText, width / 2, height - 30);
 
-    function generateMeme() {
-      let fileInput = document.getElementById('imageInput');
-      if (fileInput.files.length > 0) {
-        let file = fileInput.files[0];
-        let url = URL.createObjectURL(file);
-        loadImage(url, loadedImg => {
-          img = loadedImg;
-          img.resize(400, 400); // Resize to fit canvas
-          emojis = []; // Clear emojis for new image
-        });
-      }
-      let downloadLink = document.getElementById('downloadLink');
-      downloadLink.href = canvas.elt.toDataURL('image/png');
+    textSize(30);
+    emojis.forEach(emoji => {
+      text(emoji.text, emoji.x, emoji.y);
+    });
+  }
+
+  function placeEmoji() {
+    let selectedEmoji = document.getElementById('emojiSelect').value;
+    let x = mouseX;
+    let y = mouseY;
+    if (x >= 0 && x <= width && y >= 0 && y <= height) {
+      emojis.push({ text: selectedEmoji, x: x, y: y });
+      redraw(); // Re-render meme with new emoji
+    }
+  }
+
+  function generateMeme() {
+    let fileInput = document.getElementById('imageInput');
+    let downloadLink = document.getElementById('downloadLink');
+
+    if (fileInput.files.length > 0) {
+      let file = fileInput.files[0];
+      let url = URL.createObjectURL(file);
+      loadImage(url, loadedImg => {
+        img = loadedImg;
+        img.resize(400, 400);
+        emojis = [];
+        redraw();
+        setTimeout(() => {
+          renderMeme();
+          const dataURL = canvas.elt.toDataURL('image/png');
+          downloadLink.href = dataURL;
+          downloadLink.style.display = 'block';
+        }, 200);
+      });
+    } else {
+      renderMeme();
+      const dataURL = canvas.elt.toDataURL('image/png');
+      downloadLink.href = dataURL;
       downloadLink.style.display = 'block';
+
+      if (!document.getElementById('topText').value && !document.getElementById('bottomText').value && emojis.length === 0) {
+        alert('Add text or emojis to create a meme first!');
+      }
     }
-  </script>
+  }
+</script>
 </body>
 </html>
